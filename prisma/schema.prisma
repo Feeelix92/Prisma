@@ -1,28 +1,71 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
-  posts Post[]
+model artikel {
+  artnr     Decimal     @id @db.Decimal(6, 0)
+  bez       String      @db.VarChar(80)
+  weingut   String      @db.VarChar(80)
+  jahrgang  Decimal?    @db.Decimal(4, 0)
+  farbe     String?     @db.Char(4)
+  preis     Decimal     @db.Decimal(6, 2)
+  auftrpos  auftrpos[]
+  lieferbez lieferbez[]
+
+  @@index([bez])
 }
 
-model Post {
-  id        Int     @id @default(autoincrement())
-  title     String
-  content   String?
-  published Boolean @default(false)
-  author    User    @relation(fields: [authorId], references: [id])
-  authorId  Int
+model auftrag {
+  auftrnr  Decimal    @id @db.Decimal(8, 0)
+  datum    DateTime   @db.Date
+  kndnr    Decimal?   @db.Decimal(6, 0)
+  kunde    kunde?     @relation(fields: [kndnr], references: [kndnr], onDelete: NoAction, onUpdate: NoAction)
+  auftrpos auftrpos[]
 }
 
+model auftrpos {
+  auftrnr Decimal @db.Decimal(8, 0)
+  anzahl  Int
+  artnr   Decimal @db.Decimal(6, 0)
+  artikel artikel @relation(fields: [artnr], references: [artnr], onDelete: NoAction, onUpdate: NoAction)
+  auftrag auftrag @relation(fields: [auftrnr], references: [auftrnr], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([auftrnr, artnr])
+}
+
+model kunde {
+  kndnr   Decimal   @id @db.Decimal(6, 0)
+  name    String    @db.VarChar(40)
+  vorname String?   @db.VarChar(40)
+  str     String?   @db.VarChar(40)
+  plz     String    @db.VarChar(8)
+  ort     String    @db.VarChar(40)
+  auftrag auftrag[]
+
+  @@index([name, vorname], map: "kunde_name_idx")
+}
+
+model lieferant {
+  lftnr     Decimal     @id @db.Decimal(2, 0)
+  firma     String      @db.VarChar(40)
+  postfach  String?     @db.Char(5)
+  plz       String      @db.VarChar(8)
+  ort       String      @db.VarChar(40)
+  lieferbez lieferbez[]
+
+  @@index([firma])
+}
+
+model lieferbez {
+  lftnr     Decimal   @db.Decimal(2, 0)
+  artnr     Decimal   @db.Decimal(6, 0)
+  artikel   artikel   @relation(fields: [artnr], references: [artnr], onDelete: NoAction, onUpdate: NoAction)
+  lieferant lieferant @relation(fields: [lftnr], references: [lftnr], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([lftnr, artnr])
+}
