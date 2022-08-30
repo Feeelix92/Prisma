@@ -1,6 +1,8 @@
 import { PrismaClient } from '@prisma/client'
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient({
+    log: ['query', 'info', 'warn', 'error'],
+})
 
 async function main() {
 
@@ -23,6 +25,21 @@ async function main() {
 
     // Ausgabe der Suchmenge in der console
     console.log(artikel)
+
+    // const kunde = await prisma.kunde.create({
+    //     data: {
+    //         kndnr: '123457',
+    //         name: 'Test Name',
+    //         vorname: 'Test Vorname',
+    //         str: 'musterstr. 1',
+    //         plz: '12345',
+    //         ort: 'Musterstadt',
+    //     },
+    //
+    // })
+    // console.log(kunde)
+
+
 }
 
 main()
